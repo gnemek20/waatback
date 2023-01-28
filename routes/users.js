@@ -1,3 +1,4 @@
+const { json } = require('express');
 var express = require('express');
 var router = express.Router();
 
@@ -15,6 +16,27 @@ sql.connect((error) => {
     console.error('mysql connection error')
     console.error(error)
   }
+})
+
+router.post('/user', (req, res) => {
+  const inform = {
+    id: req.body.user.id
+  }
+
+  sql.query('select * from users where id=?', [inform.id], (error, user) => {
+    if (error) {
+      console.log(error)
+
+      res.json({
+        msg: '시스템에 에러가 발생했습니다.'
+      })
+    }
+    else {
+      res.json({
+        user: user[0]
+      })
+    }
+  })
 })
 
 router.post('/signin', (req, res) => {
