@@ -97,4 +97,35 @@ router.post('/signup', (req, res) => {
   })
 })
 
+router.post('/validateid', (req, res) => {
+  const inform = {
+    id: req.body.id
+  }
+
+  sql.query('select id from users where id=?', inform.id, (error, user) => {
+    if (error) {
+      console.log(error)
+
+      res.json({
+        status: false,
+        msg: '시스템에 에러가 발생했습니다.'
+      })
+    }
+    else {
+      if (user[0] == undefined) {
+        res.json({
+          status: true,
+          msg: '사용 가능한 아이디입니다.'
+        })
+      }
+      else {
+        res.json({
+          status: false,
+          msg: '동일한 아이디가 존재합니다.'
+        })
+      }
+    }
+  })
+})
+
 module.exports = router;

@@ -4,7 +4,7 @@ var router = express.Router();
 const multer = require('multer')
 const storage = multer.diskStorage({
   destination(req, file, callback) {
-    callback(null, `routes/${req.body.name}/saveImages/`)
+    callback(null, `routes/${req.body.id}/saveImages/`)
   },
   filename(req, file, callback) {
     callback(null, file.originalname)
@@ -25,8 +25,8 @@ const saveUpload = multer({storage: saveStorage})
 router.post('/mkdir', (req, res) => {
   const fs = require('fs')
 
-  fs.mkdirSync(`${__dirname}\\${req.body.name}\\saveImages`, {recursive: true})
-  fs.mkdirSync(`${__dirname}\\${req.body.name}\\saveXmls`, {recursive: true})
+  fs.mkdirSync(`${__dirname}\\${req.body.id}\\saveImages`, {recursive: true})
+  fs.mkdirSync(`${__dirname}\\${req.body.id}\\saveXmls`, {recursive: true})
 
   res.json({})
 })
@@ -36,9 +36,9 @@ router.post('/saveimages', saveUpload.array('image', 5), (req, res) => {})
 router.post('/inference', upload.array('image', 5), (req, res) => {
   console.log(req.files)
 
-  const name = req.body.name
-  const image_dir = `${__dirname}\\${name}\\saveImages`
-  const save_dir = `${__dirname}\\${name}\\saveXmls`
+  const id = req.body.id
+  const image_dir = `${__dirname}\\${id}\\saveImages`
+  const save_dir = `${__dirname}\\${id}\\saveXmls`
   const pretrained_model = 'YOLOv5'
 
   const result = require('child_process').spawn('python', ['./public/pythons/InferenceWeb.py', image_dir, '', save_dir, pretrained_model])
@@ -69,7 +69,7 @@ router.post('/inference', upload.array('image', 5), (req, res) => {
     console.log('파일 삭제중 . . .')
 
     const fs = require('fs')
-    fs.rm(`${__dirname}\\${name}`, {recursive: true}, (error) => {
+    fs.rm(`${__dirname}\\${id}`, {recursive: true}, (error) => {
       if (error) console.log(error)
     })
   }, 7100)
