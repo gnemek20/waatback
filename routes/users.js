@@ -128,4 +128,86 @@ router.post('/validateid', (req, res) => {
   })
 })
 
+router.post('/getWorkSpaces', (req, res) => {
+  const id = req.body.id;
+
+  sql.query('select * from workbench where id=?', id, (error, result) => {
+    if (error) {
+      console.log(error);
+
+      return res.json({
+        status: false,
+        msg: '시스템에 에러가 발생했습니다.',
+      });
+    }
+    else {
+      const workspaces = [];
+      for (var i = 0; i < result.length; i++) {
+        workspaces.push({
+          id: id,
+          theme: result[i].theme,
+          content: result[i].content,
+          date: result[i].date,
+        })
+      }
+      return res.json({workspaces: workspaces});
+    }
+  })
+});
+
+router.post('/validateWorkspaceTheme', (req, res) => {
+  const functions = require('../public/javascripts/functions.js');
+  const workspace = req.body.workspace;
+
+  const isExist = functions.existsdir(`/public/workbench/${workspace.id}/${workspace.theme}`);
+  return res.json({isExist: isExist})
+});
+
+router.post('/createWorkspace', (req, res) => {
+  const functions = require('../public/javascripts/functions.js');
+  const workspace = req.body.workspace;
+
+  sql.query('insert into workbench(id, theme, content, date) values(?, ?, ?, ?)', [workspace.id, workspace.theme, workspace.content, workspace.date], (error) => {
+    if (error) {
+      console.log(error);
+      
+      return res.json({
+        status: false,
+        msg: '시스템에 에러가 발생했습니다.',
+      });
+    }
+    else {
+      functions.mkdir(`/public/workbench/${workspace.id}/${workspace.theme}/images`);
+      return res.json ({
+        status: true,
+      });
+    }
+  });
+});
+
+router.post('/deleteWorkspace', (req, res) => {
+  const functions = require('../public/javascripts/functions.js');
+  const workspace = {
+    id: req.body.workspace.id,
+    theme: req.body.workspace.theme,
+  }
+
+  sql.query('delete from workbench where id=? and theme=?', [workspace.id, workspace.theme], (error) => {
+    if (error) {
+      console.log(error);
+
+      return res.json({
+        status: false,
+        msg: '시스템에 에러가 발생했습니다.',
+      });
+    }
+    else {
+      functions.rmdir(`/public/workbench/${workspace.id}/${workspace.theme}`);
+      return res.json({
+        status: true,
+      });
+    }
+  });
+});
+
 module.exports = router;
