@@ -22,6 +22,10 @@ const saveStorage = multer.diskStorage({
 })
 const saveUpload = multer({storage: saveStorage})
 
+router.get('/image', (req, res) => {
+  res.sendFile(`${process.cwd()}\\public\\images\\chicken01.png`)
+})
+
 router.post('/mkdir', (req, res) => {
   const fs = require('fs')
 
