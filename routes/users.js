@@ -2,6 +2,17 @@ const { json } = require('express');
 var express = require('express');
 var router = express.Router();
 
+const multer = require('multer');
+const storage = multer.diskStorage({
+  destination(req, file, callback) {
+    callback(null, `public/workbench/${req.body.id}/${req.body.theme}/images/`);
+  },
+  filename(req, file, callback) {
+    callback(null, file.originalname);
+  },
+})
+const upload = multer({storage: storage});
+
 var mysql = require('mysql');
 var sql = mysql.createConnection({
   host: 'localhost',
@@ -155,6 +166,54 @@ router.post('/getWorkSpaces', (req, res) => {
   })
 });
 
+router.post('/getWorkspace', (req, res) => {
+  const theme = req.body.workspace.theme;
+
+  sql.query('select * from workbench where theme=?', theme, (error, result) => {
+    if (error) {
+      console.log(error);
+
+      return req.json({
+        status: false,
+        msg: '시스템에 에러가 발생했습니다.',
+      });
+    }
+    else {
+      return res.json({
+        status: true,
+        workspace: result[0],
+      });
+    }
+  })
+});
+
+router.post('/getImages', (req, res) => {
+  const workspace = req.body.workspace;
+
+  sql.query('select * from images where id=? and theme=?', [workspace.id, workspace.theme], (error, result) => {
+    if (error) {
+      console.log(error)
+
+      return req.json({
+        status: false,
+        msg: '시스템에 에러가 발생했습니다.',
+      });
+    }
+    else {
+      const images = [];
+      for (let i = 0; i < result.length; i++) {
+        images.push({
+          image: result[i].image,
+        })
+      }
+      return res.json({
+        status: true,
+        images: images,
+      })
+    }
+  })
+})
+
 router.post('/validateWorkspaceTheme', (req, res) => {
   const functions = require('../public/javascripts/functions.js');
   const workspace = req.body.workspace;
@@ -208,6 +267,38 @@ router.post('/deleteWorkspace', (req, res) => {
       });
     }
   });
+});
+
+router.post('/deleteImages', (req, res) => {
+  const functions = require('../public/javascripts/functions.js');
+  const workspace = req.body.workspace;
+  const images = req.body.images;
+
+  for (let i = 0; i < images.length; i++) {
+    sql.query('delete from images where id=? and theme=? and image=?', [workspace.id, workspace.theme, images[i].image], (error) => {
+      if (error) {
+        console.log(error);
+      }
+    });
+  }
+
+  for (let i = 0; i < images.length; i++) {
+    functions.rmdir(`/public/workbench/${workspace.id}/${workspace.theme}/images/${images[i].image}`);
+  }
+
+  return res.json({
+    status: true,
+  });
+});
+
+router.post('/uploadFiles', upload.array('file'), (req, res) => {
+  console.log(req.files);
+
+  for (let i = 0; i < req.files.length; i++) {
+    sql.query('insert into images(id, theme, image) values(?, ?, ?)', [req.body.id, req.body.theme, req.files[i].originalname], (error) => {
+      if (error) console.log(error);
+    });
+  }
 });
 
 module.exports = router;

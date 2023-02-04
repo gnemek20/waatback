@@ -17,7 +17,7 @@ const rmdir = (address) => {
   const fs = require('fs');
   const replaceAddress = address.replace(/\//g, '\\');
 
-  fs.rm(`${process.cwd()}${replaceAddress}`, {recursive: true});
+  fs.rm(`${process.cwd()}${replaceAddress}`, {recursive: true}, () => {});
 }
 
 module.exports.existsdir = (address) => existsdir(address)
