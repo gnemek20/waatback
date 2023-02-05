@@ -212,7 +212,19 @@ router.post('/getImages', (req, res) => {
       })
     }
   })
-})
+});
+
+let image = {}
+router.post('/getImage', (req, res) => {
+  image = req.body.image;
+
+  res.json({
+    status: true,
+  })
+});
+router.get(`/getImage/image`, (req, res) => {
+  res.sendFile(`${process.cwd()}/public/workbench/${image.id}/${image.theme}/images/${image.image}`);
+});
 
 router.post('/validateWorkspaceTheme', (req, res) => {
   const functions = require('../public/javascripts/functions.js');

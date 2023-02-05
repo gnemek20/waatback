@@ -10,6 +10,12 @@ var pythonsRouter = require('./routes/pythons');
 
 var app = express();
 
+const cors = require('cors');
+const corsOptions = {
+  origin: 'http://waat.kro.kr',
+}
+app.use(cors(corsOptions));
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
